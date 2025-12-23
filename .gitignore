@@ -1,0 +1,47 @@
+# gitignore untuk project Go
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+*.coverage
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific directories
+downloads/*
+!downloads/.gitkeep
+output/
+*.mp4
+*.mkv
+*.avi
+*.mov
+
+# Environment files
+.env
+.env.local
+
+# Build output
+dist/
+build/

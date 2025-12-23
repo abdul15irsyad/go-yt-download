@@ -1,0 +1,19 @@
+{
+  "segments": [
+    {
+      "startTime": "00:00:00",
+      "endTime": "00:00:30",
+      "outputPath": "segment_1.mp4"
+    },
+    {
+      "startTime": "00:00:30",
+      "endTime": "00:01:00",
+      "outputPath": "segment_2.mp4"
+    },
+    {
+      "startTime": "00:01:00",
+      "endTime": "00:01:30",
+      "outputPath": "segment_3.mp4"
+    }
+  ]
+}
