@@ -103,6 +103,7 @@ func (f *FFMpeg) TrimMultiple(req models.TrimSegment) []models.TrimResult {
 		return results
 	}
 
+	sem := make(chan struct{}, 3)
 	var wg sync.WaitGroup
 	var rwMutex sync.RWMutex
 
@@ -115,9 +116,13 @@ func (f *FFMpeg) TrimMultiple(req models.TrimSegment) []models.TrimResult {
 			continue
 		}
 		wg.Add(1)
+		sem <- struct{}{}
 		go func() {
-			defer wg.Done()
-			fmt.Printf("\nprocessing segment %d of %d\n", i+1, len(req.Segments))
+			defer func() {
+				<-sem
+				wg.Done()
+			}()
+			fmt.Printf("processing segment %d of %d\n", i+1, len(req.Segments))
 
 			trimReq := models.VideoTrimRequest{
 				InputPath:  req.InputPath,

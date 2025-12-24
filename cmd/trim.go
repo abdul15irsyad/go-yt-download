@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/abdul15irsyad/go-yt-download/internal/ffmpeg"
 	"github.com/abdul15irsyad/go-yt-download/pkg/models"
@@ -13,9 +14,10 @@ import (
 )
 
 var (
-	trimInput      string
-	trimOutput     string
-	trimTimeRanges string
+	trimInput           string
+	trimOutput          string
+	trimTimeRanges      string
+	defaultOuputTrimDir = "./output/trims"
 )
 
 var trimCmd = &cobra.Command{
@@ -27,7 +29,7 @@ multiple ranges are separated by commas.
 example: yt-download trim -i input.mp4 -o output.mp4 -t 00:00:05-00:00:30
 example with multiple ranges: yt-download trim -i input.mp4 -o output.mp4 -t 00:00:05-00:00:30,00:01:00-00:01:30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := os.MkdirAll("./trimmed", 0755); err != nil {
+		if err := os.MkdirAll(defaultOuputTrimDir, 0755); err != nil {
 			log.Fatal("failed to create default output directory: %v", err)
 		}
 
@@ -36,7 +38,9 @@ example with multiple ranges: yt-download trim -i input.mp4 -o output.mp4 -t 00:
 			return fmt.Errorf("the input file cannot be empty, use the -i or --input flag")
 		}
 		if trimOutput == "" {
-			trimOutput = fmt.Sprintf("./trimmed/trimmed_%s", filepath.Base(trimInput))
+			fileName := filepath.Base(trimInput)
+			trimOutput = fmt.Sprintf("%s/%d_%s", defaultOuputTrimDir, time.Now().UnixMilli(), fileName)
+			fmt.Println(trimOutput)
 		}
 		if trimTimeRanges == "" {
 			return fmt.Errorf("time ranges cannot be empty, use the -t or --time flag")

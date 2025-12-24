@@ -28,10 +28,6 @@ vendor/
 .DS_Store
 
 # Project specific directories
-downloads/*
-!downloads/.gitkeep
-trimmed/*
-!trimmed/.gitkeep
 output/
 *.mp4
 *.mkv

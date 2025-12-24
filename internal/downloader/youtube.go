@@ -35,9 +35,6 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 		result.Error = "url cannot be empty"
 		return result
 	}
-	if req.OutputDir == "" {
-		req.OutputDir = "./downloads"
-	}
 	if err := os.MkdirAll(req.OutputDir, 0755); err != nil {
 		result.Error = fmt.Sprintf("failed to create directory: %v", err)
 		return result
