@@ -1,5 +1,3 @@
-# gitignore untuk project Go
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -32,6 +30,8 @@ vendor/
 # Project specific directories
 downloads/*
 !downloads/.gitkeep
+trimmed/*
+!trimmed/.gitkeep
 output/
 *.mp4
 *.mkv

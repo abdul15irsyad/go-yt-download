@@ -9,11 +9,10 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "yt-download",
-	Short: "Download YouTube video dan potong berdasarkan waktu tertentu",
-	Long: `yt-download adalah aplikasi CLI untuk:
-1. Download video dari YouTube
-2. Memotong video berdasarkan timestamp tertentu
-3. Memotong video menjadi multiple segments`,
+	Short: "Download YouTube videos and trim them based on specific time",
+	Long: `yt-download CLI application for:
+1. Download videos from YouTube
+2. Trim video based on specific timestamp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

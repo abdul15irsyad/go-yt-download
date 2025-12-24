@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/abdul15irsyad/go-yt-download/internal/downloader"
+	"github.com/abdul15irsyad/go-yt-download/internal/ffmpeg"
 	"github.com/abdul15irsyad/go-yt-download/pkg/models"
 	"github.com/spf13/cobra"
 )
@@ -22,8 +23,8 @@ Example: yt-download download -u "https://www.youtube.com/watch?v=..."`,
 		if downloadURL == "" {
 			return fmt.Errorf("URL cannot be empty, use flag -u or --url")
 		}
-
-		yd := downloader.NewYouTubeDownloader()
+		ffmpeg := ffmpeg.NewFFMpeg()
+		yd := downloader.NewYouTubeDownloader(ffmpeg)
 		req := models.VideoDownloadRequest{
 			URL:       downloadURL,
 			OutputDir: downloadDir,

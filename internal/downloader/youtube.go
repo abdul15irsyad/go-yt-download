@@ -5,33 +5,32 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/abdul15irsyad/go-yt-download/internal/ffmpeg"
 	"github.com/abdul15irsyad/go-yt-download/pkg/models"
 	"github.com/kkdai/youtube/v2"
 )
 
-// YouTubeDownloader menangani download video dari YouTube
 type YouTubeDownloader struct {
 	client *youtube.Client
+	ffmpeg *ffmpeg.FFMpeg
 }
 
-// NewYouTubeDownloader membuat instance baru YouTubeDownloader
-func NewYouTubeDownloader() *YouTubeDownloader {
+func NewYouTubeDownloader(ffmpeg *ffmpeg.FFMpeg) *YouTubeDownloader {
 	return &YouTubeDownloader{
 		client: &youtube.Client{},
+		ffmpeg: ffmpeg,
 	}
 }
 
-// Download mengunduh video dari YouTube
 func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.DownloadResult {
 	result := models.DownloadResult{}
 
-	// Validasi URL
+	// validation
 	if req.URL == "" {
 		result.Error = "url cannot be empty"
 		return result
@@ -39,7 +38,6 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 	if req.OutputDir == "" {
 		req.OutputDir = "./downloads"
 	}
-
 	if err := os.MkdirAll(req.OutputDir, 0755); err != nil {
 		result.Error = fmt.Sprintf("failed to create directory: %v", err)
 		return result
@@ -47,7 +45,7 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 
 	client := yd.client
 
-	// Get video info
+	// get video info
 	fmt.Printf("get video information from: '%s'\n", req.URL)
 	video, err := yd.client.GetVideo(req.URL)
 	if err != nil {
@@ -76,7 +74,6 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 	errCh := make(chan error, 2)
 	wg.Add(2)
 
-	// ===== download video =====
 	go func() {
 		defer wg.Done()
 		fmt.Println("downloading video...")
@@ -86,7 +83,6 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 		fmt.Println("video downloaded")
 	}()
 
-	// ===== download audio =====
 	go func() {
 		defer wg.Done()
 		fmt.Println("downloading audio...")
@@ -105,9 +101,8 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 		}
 	}
 
-	// ===== merge =====
 	fmt.Printf("start merging video & audio\n")
-	reader, cmd, err := mergeVideoAndAudio(videoFilePath, audioFilePath)
+	reader, cmd, err := yd.ffmpeg.MergeVideoAndAudio(videoFilePath, audioFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,7 +112,7 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 		os.Remove(audioFilePath)
 	}()
 
-	// Buat output file
+	// create output file
 	filename := sanitizeFilename(video.Title) + ".mp4"
 	outputPath := filepath.Join(req.OutputDir, filename)
 
@@ -128,7 +123,6 @@ func (yd *YouTubeDownloader) Download(req models.VideoDownloadRequest) models.Do
 	}
 	defer file.Close()
 
-	// Copy stream ke file
 	_, err = io.Copy(file, reader)
 	if err != nil {
 		result.Error = fmt.Sprintf("failed save video: %v", err)
@@ -166,7 +160,6 @@ func download(client *youtube.Client, video *youtube.Video, format *youtube.Form
 	return nil
 }
 
-// sanitizeFilename membersihkan nama file dari karakter tidak valid
 func sanitizeFilename(filename string) string {
 	invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
 	result := filename
@@ -175,36 +168,9 @@ func sanitizeFilename(filename string) string {
 		result = strings.ReplaceAll(result, char, "_")
 	}
 
-	// Limit panjang filename
 	if len(result) > 200 {
 		result = result[:200]
 	}
 
 	return result
-}
-
-func mergeVideoAndAudio(videoFile, audioFile string) (io.Reader, *exec.Cmd, error) {
-	cmd := exec.Command(
-		"ffmpeg",
-		"-i", videoFile,
-		"-i", audioFile,
-		"-c:v", "copy",
-		"-c:a", "aac",
-		"-movflags", "frag_keyframe+empty_moov",
-		"-f", "mp4",
-		"pipe:1",
-	)
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// cmd.Stderr = os.Stderr
-
-	if err := cmd.Start(); err != nil {
-		return nil, nil, err
-	}
-
-	return stdout, cmd, nil
 }
