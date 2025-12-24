@@ -40,7 +40,6 @@ example with multiple ranges: yt-download trim -i input.mp4 -o output.mp4 -t 00:
 		if trimOutput == "" {
 			fileName := filepath.Base(trimInput)
 			trimOutput = fmt.Sprintf("%s/%d_%s", defaultOuputTrimDir, time.Now().UnixMilli(), fileName)
-			fmt.Println(trimOutput)
 		}
 		if trimTimeRanges == "" {
 			return fmt.Errorf("time ranges cannot be empty, use the -t or --time flag")
